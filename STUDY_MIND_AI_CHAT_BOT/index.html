@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>StudyMind AI — Your Personal Tutor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Playfair+Display:wght@700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css"/>
+<link rel="stylesheet" href="/style.css"/>
+</head>
+<body>
+
+<!-- Animated background -->
+<div class="bg-orbs">
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
+  <div class="orb orb3"></div>
+</div>
+
+<!-- Sidebar -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <div class="logo">
+      <span class="logo-icon">🧠</span>
+      <span class="logo-text">StudyMind</span>
+    </div>
+    <button class="sidebar-toggle" id="sidebarToggle" title="Toggle sidebar">‹</button>
+  </div>
+
+  <!-- Status -->
+  <div class="status-card" id="statusCard">
+    <div class="status-dot" id="statusDot"></div>
+    <span id="statusText">Connecting...</span>
+  </div>
+
+  <!-- Model selector -->
+  <div class="sidebar-section">
+    <label class="section-label">🤖 AI Model</label>
+    <select id="modelSelect" class="model-select">
+      <option value="llama3.2">llama3.2 (default)</option>
+    </select>
+  </div>
+
+  <!-- Search toggle -->
+  <div class="sidebar-section">
+    <label class="section-label">🔍 Web Search</label>
+    <div class="toggle-row">
+      <span class="toggle-desc">Search while asking</span>
+      <label class="toggle">
+        <input type="checkbox" id="searchToggle"/>
+        <span class="slider"></span>
+      </label>
+    </div>
+  </div>
+
+  <!-- Quick tools -->
+  <div class="sidebar-section">
+    <label class="section-label">⚡ Quick Tools</label>
+    <button class="tool-btn" onclick="openTool('quiz')">📝 Quiz Me</button>
+    <button class="tool-btn" onclick="openTool('summarize')">📖 Summarize Topic</button>
+    <button class="tool-btn" onclick="openTool('search')">🔎 Web Search</button>
+  </div>
+
+  <!-- Suggested topics -->
+  <div class="sidebar-section">
+    <label class="section-label">💡 Suggested Prompts</label>
+    <button class="prompt-chip" onclick="usePrompt('Explain quantum mechanics in simple terms')">⚛️ Quantum Mechanics</button>
+    <button class="prompt-chip" onclick="usePrompt('How does DNA replication work?')">🧬 DNA Replication</button>
+    <button class="prompt-chip" onclick="usePrompt('Explain the French Revolution')">🏰 French Revolution</button>
+    <button class="prompt-chip" onclick="usePrompt('Solve a quadratic equation step by step')">📐 Quadratic Equations</button>
+    <button class="prompt-chip" onclick="usePrompt('What is machine learning?')">🤖 Machine Learning</button>
+  </div>
+
+  <!-- Session stats -->
+  <div class="sidebar-section" style="margin-top:auto">
+    <label class="section-label">📊 Session</label>
+    <div class="stat-row"><span>Messages</span><span id="msgCount">0</span></div>
+    <div class="stat-row"><span>Searches</span><span id="searchCount">0</span></div>
+    <button class="clear-btn" onclick="clearChat()">🗑️ Clear Chat</button>
+  </div>
+</aside>
+
+<!-- Main -->
+<main class="main" id="main">
+
+  <!-- Header -->
+  <header class="topbar">
+    <button class="menu-btn" id="menuBtn" onclick="toggleSidebar()">☰</button>
+    <div class="topbar-title">
+      <span class="topbar-brand">StudyMind AI</span>
+      <span class="topbar-sub">Powered by Ollama · Local & Private</span>
+    </div>
+    <div class="topbar-actions">
+      <button class="action-btn" onclick="openTool('search')" title="Web Search">🔍</button>
+      <button class="action-btn" onclick="openTool('quiz')" title="Quiz">📝</button>
+    </div>
+  </header>
+
+  <!-- Chat area -->
+  <div class="chat-area" id="chatArea">
+    <!-- Welcome screen -->
+    <div class="welcome" id="welcome">
+      <div class="welcome-icon">🎓</div>
+      <h1 class="welcome-title">Welcome to <span class="gradient-text">StudyMind</span></h1>
+      <p class="welcome-sub">Your personal AI tutor — powered by Ollama, running locally. Ask anything about any subject.</p>
+      <div class="welcome-cards">
+        <div class="wcard" onclick="usePrompt('Explain photosynthesis step by step')">
+          <span class="wcard-icon">🌿</span>
+          <span>Explain a concept</span>
+        </div>
+        <div class="wcard" onclick="usePrompt('Quiz me on World War 2')">
+          <span class="wcard-icon">🧩</span>
+          <span>Test my knowledge</span>
+        </div>
+        <div class="wcard" onclick="usePrompt('Give me study tips for exams')">
+          <span class="wcard-icon">📚</span>
+          <span>Study strategies</span>
+        </div>
+        <div class="wcard" onclick="usePrompt('Summarize the theory of relativity')">
+          <span class="wcard-icon">⚡</span>
+          <span>Summarize a topic</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Messages -->
+    <div class="messages" id="messages"></div>
+  </div>
+
+  <!-- Search results panel -->
+  <div class="search-panel" id="searchPanel" style="display:none">
+    <div class="search-panel-header">
+      <span>🔍 Web Results</span>
+      <button onclick="closeSearchPanel()">✕</button>
+    </div>
+    <div class="search-results" id="searchResults"></div>
+  </div>
+
+  <!-- Input area -->
+  <div class="input-area">
+    <div class="input-box">
+      <textarea
+        id="userInput"
+        class="input-field"
+        placeholder="Ask anything — chemistry, history, math, coding..."
+        rows="1"
+        onkeydown="handleKey(event)"
+        oninput="autoResize(this)"
+      ></textarea>
+      <div class="input-actions">
+        <button class="search-btn" id="searchBtn" onclick="toggleSearch()" title="Toggle web search">🔍</button>
+        <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+        </button>
+      </div>
+    </div>
+    <p class="input-note">StudyMind runs entirely on your local machine via Ollama — your data never leaves your computer.</p>
+  </div>
+</main>
+
+<!-- Tool Modal -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal()"></div>
+<div class="modal" id="modal">
+  <div class="modal-header">
+    <h3 id="modalTitle">Tool</h3>
+    <button onclick="closeModal()">✕</button>
+  </div>
+  <div class="modal-body" id="modalBody"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
+<script src="/app.js"></script>
+</body>
+</html>
